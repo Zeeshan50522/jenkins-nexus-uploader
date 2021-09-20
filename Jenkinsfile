@@ -3,9 +3,9 @@ pipeline {
     agent any
     
     environment {
-        imageName = "docker-image-name-here"
-        registryCredentials = "jenkins saved nexus credentialsi"
-        registry = "nexus-docker-hosted-dns-name:port-of-docker/"
+        imageName = "react-frontend-application"
+        registryCredentials = "nexus"
+        registry = "ec2-52-3-224-79.compute-1.amazonaws.com:8082/"
         dockerImage = ''
     }
     
@@ -31,8 +31,8 @@ pipeline {
     // Stopping Docker containers for cleaner Docker run
     stage('stop previous containers') {
          steps {
-            sh 'docker ps -f name=docker-image-name -q | xargs --no-run-if-empty docker container stop'
-            sh 'docker container ls -a -fname=docker-image-name -q | xargs -r docker container rm'
+            sh 'docker ps -f name=react-frontend-application -q | xargs --no-run-if-empty docker container stop'
+            sh 'docker container ls -a -fname=react-frontend-application -q | xargs -r docker container rm'
          }
        }    
     }
