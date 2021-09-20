@@ -10,10 +10,6 @@ pipeline {
     }
     
     stages {
-        stage('Code checkout') {
-            steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://bitbucket.org/ananthkannan/phprepo/']]])                   }
-        }
     // Building Docker images
     stage('Building image') {
       steps{
