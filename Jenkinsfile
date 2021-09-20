@@ -3,7 +3,7 @@ pipeline {
     agent any
     
     environment {
-        imageName = "myphpapp"
+        imageName = "react-frontend-application"
         registryCredentials = "nexus"
         registry = "ec2-52-3-224-79.compute-1.amazonaws.com:8082/"
         dockerImage = ''
@@ -31,14 +31,14 @@ pipeline {
     // Stopping Docker containers for cleaner Docker run
     stage('stop previous containers') {
          steps {
-            sh 'docker ps -f name=myphpcontainer -q | xargs --no-run-if-empty docker container stop'
-            sh 'docker container ls -a -fname=myphpcontainer -q | xargs -r docker container rm'
+            sh 'docker ps -f name=react-frontend-application -q | xargs --no-run-if-empty docker container stop'
+            sh 'docker container ls -a -fname=react-frontend-application -q | xargs -r docker container rm'
          }
        }
     stage('Docker Run') {
        steps{
          script {
-                sh 'docker run -d -p 3000:3000 --rm --name myphpcontainer ' + registry + imageName
+                sh 'docker run -d -p 3000:3000 --rm --name react-frontend-application ' + registry + imageName
             }
          }
       }    
