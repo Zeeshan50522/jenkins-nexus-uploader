@@ -1,29 +1,50 @@
-pipeline{
+pipeline {
+    
     agent any
-
-    stages{
-        stage("build"){
-            steps{
-            echo "npm building..."
-            nodejs('Node-16.8.0'){
-                sh "docker build -t react-front ."
-                sh "docker tag react-frontend react-frontend"
-            }
+    
+    environment {
+        imageName = "myphpapp"
+        registryCredentials = "nexus"
+        registry = "ec2-13-58-223-172.us-east-2.compute.amazonaws.com:8085/"
+        dockerImage = ''
+    }
+    
+    stages {
+        stage('Code checkout') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://bitbucket.org/ananthkannan/phprepo/']]])                   }
+        }
+    // Building Docker images
+    stage('Building image') {
+      steps{
+        script {
+          dockerImage = docker.build imageName
+        }
+      }
+    }
+    // Uploading Docker images into Nexus Registry
+    stage('Uploading to Nexus') {
+     steps{  
+         script {
+             docker.withRegistry( 'http://'+registry, registryCredentials ) {
+             dockerImage.push('latest')
           }
         }
-        stage("Artifacts to Nexus"){
-            steps {
-                script {
-                    docker push react-frontend, 
-                    credentialsId: 'nexus-credentials', 
-                    groupId: 'com.nbs.nexus', 
-                    nexusUrl: '23.22.224.128:8081', 
-                    nexusVersion: 'nexus3', 
-                    protocol: 'http', 
-                    repository: 'react-frontend', 
-                    version: '1.0.0'
-                }
+      }
+    }
+    // Stopping Docker containers for cleaner Docker run
+    stage('stop previous containers') {
+         steps {
+            sh 'docker ps -f name=myphpcontainer -q | xargs --no-run-if-empty docker container stop'
+            sh 'docker container ls -a -fname=myphpcontainer -q | xargs -r docker container rm'
+         }
+       }
+    stage('Docker Run') {
+       steps{
+         script {
+                sh 'docker run -d -p 3000:3000 --rm --name myphpcontainer ' + registry + imageName
             }
-        }
+         }
+      }    
     }
 }
